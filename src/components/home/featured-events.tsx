@@ -1,82 +1,58 @@
 
-import Link from "next/link";
+"use client";
 
-const events = [
-  {
-    id: 1,
-    title: "Community Tree Plantation",
-    category: "Environment",
-    date: "November 08, 2026",
-    location: "Khulna, Bangladesh",
-    creator: "Sarder Shawon",
-    description:
-      "Join us in planting trees and creating a greener, healthier environment for our community.",
-    image:
-      "https://images.unsplash.com/photo-1448375240586-882707db888b?w=800",
-  },
-  {
-    id: 2,
-    title: "Clean Our City Campaign",
-    category: "Cleanliness",
-    date: "November 12, 2026",
-    location: "Dhaka, Bangladesh",
-    creator: "Rahim Ahmed",
-    description:
-      "Come together to clean public spaces and make our city a better place to live.",
-    image:
-      "https://images.unsplash.com/photo-1532996122724-e3c354a0b15?w=800",
-  },
-  {
-    id: 3,
-    title: "Food for Everyone",
-    category: "Donation",
-    date: "November 15, 2026",
-    location: "Khulna, Bangladesh",
-    creator: "Nusrat Jahan",
-    description:
-      "Help distribute food packages to families who need support in our community.",
-    image:
-      "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800",
-  },
-  {
-    id: 4,
-    title: "Help the Community",
-    category: "Community",
-    date: "November 19, 2026",
-    location: "Jessore, Bangladesh",
-    creator: "Tanvir Hasan",
-    description:
-      "Support local families through a day of volunteering and community service.",
-    image:
-      "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=800",
-  },
-  {
-    id: 5,
-    title: "Save the Green Earth",
-    category: "Environment",
-    date: "November 23, 2026",
-    location: "Dhaka, Bangladesh",
-    creator: "Ayesha Rahman",
-    description:
-      "Take part in protecting nature and spreading environmental awareness.",
-    image:
-      "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800",
-  },
-  {
-    id: 6,
-    title: "Support Those in Need",
-    category: "Social Support",
-    date: "November 28, 2026",
-    location: "Khulna, Bangladesh",
-    creator: "Imran Hossain",
-    description:
-      "Make a difference by supporting people facing difficult circumstances.",
-    image:
-      "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800",
-  },
-];
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+interface Event {
+  _id: string;
+  title: string;
+  description: string;
+  eventType: string;
+  thumbnail: string;
+  location: string;
+  eventDate: string;
+  creatorName: string;
+}
 
 export default function FeaturedEvents() {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchFeaturedEvents = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/events/featured"
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch events");
+        }
+
+        const data = await response.json();
+
+        setEvents(data.events);
+      } catch (error) {
+        console.error("Error fetching featured events:", error);
+        setError("Unable to load events. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedEvents();
+  }, []);
+
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   return (
     <section className="bg-background px-5 py-16 md:px-8 md:py-20">
       <div className="mx-auto max-w-7xl">
@@ -107,74 +83,106 @@ export default function FeaturedEvents() {
           </Link>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="py-16 text-center">
+            <p className="text-sm text-muted-foreground">
+              Loading upcoming events...
+            </p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {!loading && error && (
+          <div className="rounded-2xl border border-border bg-card px-5 py-12 text-center">
+            <p className="text-sm text-destructive">{error}</p>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && events.length === 0 && (
+          <div className="rounded-2xl border border-border bg-card px-5 py-12 text-center">
+            <h3 className="text-lg font-semibold text-card-foreground">
+              No Upcoming Events
+            </h3>
+
+            <p className="mt-2 text-sm text-muted-foreground">
+              There are no upcoming events at the moment. Please check back
+              later.
+            </p>
+          </div>
+        )}
+
         {/* Event Cards */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {events.map((event) => (
-            <article
-              key={event.id}
-              className="overflow-hidden rounded-2xl border border-border bg-card"
-            >
-              {/* Event Image */}
-              <div
-                role="img"
-                aria-label={event.title}
-                className="h-52 bg-cover bg-center"
-                style={{
-                  backgroundImage: `url("${event.image}")`,
-                }}
-              />
+        {!loading && !error && events.length > 0 && (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {events.map((event) => (
+              <article
+                key={event._id}
+                className="overflow-hidden rounded-2xl border border-border bg-card"
+              >
+                {/* Event Image */}
+                <div
+                  role="img"
+                  aria-label={event.title}
+                  className="h-52 bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url("${event.thumbnail}")`,
+                  }}
+                />
 
-              {/* Event Information */}
-              <div className="p-5">
-                <span className="inline-block rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-primary">
-                  {event.category}
-                </span>
+                {/* Event Information */}
+                <div className="p-5">
+                  <span className="inline-block rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-primary">
+                    {event.eventType}
+                  </span>
 
-                <h3 className="mt-3 text-lg font-semibold text-card-foreground">
-                  {event.title}
-                </h3>
+                  <h3 className="mt-3 text-lg font-semibold text-card-foreground">
+                    {event.title}
+                  </h3>
 
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {event.description}
-                </p>
-
-                {/* Date and Location */}
-                <div className="mt-4 space-y-2 text-sm text-muted-foreground">
-                  <p className="flex items-center gap-2">
-                    <span className="text-primary">⌖</span>
-                    {event.location}
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {event.description}
                   </p>
 
-                  <p className="flex items-center gap-2">
-                    <span className="text-primary">◷</span>
-                    {event.date}
-                  </p>
-                </div>
-
-                {/* Creator and Details Button */}
-                <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4">
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">
-                      Created by
+                  {/* Date and Location */}
+                  <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+                    <p className="flex items-center gap-2">
+                      <span className="text-primary">⌖</span>
+                      {event.location}
                     </p>
 
-                    <p className="mt-1 truncate text-sm font-semibold text-card-foreground">
-                      {event.creator}
+                    <p className="flex items-center gap-2">
+                      <span className="text-primary">◷</span>
+                      {formatDate(event.eventDate)}
                     </p>
                   </div>
 
-                  <Link
-                    href={`/events/${event.id}`}
-                    className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/85"
-                  >
-                    View Details
-                    <span aria-hidden="true">→</span>
-                  </Link>
+                  {/* Creator and Details Button */}
+                  <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4">
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">
+                        Created by
+                      </p>
+
+                      <p className="mt-1 truncate text-sm font-semibold text-card-foreground">
+                        {event.creatorName}
+                      </p>
+                    </div>
+
+                    <Link
+                      href={`/events/${event._id}`}
+                      className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/85"
+                    >
+                      View Details
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
+              </article>
+            ))}
+          </div>
+        )}
 
         {/* Explore All Button */}
         <div className="mt-10 text-center">
