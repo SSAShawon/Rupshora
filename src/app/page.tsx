@@ -1,5 +1,9 @@
 
+import CompletedEvents from "@/components/home/completed-events";
+import FeaturedEvents from "@/components/home/featured-events";
 import ImpactStats from "@/components/home/impact-stats";
+import Newsletter from "@/components/home/newsletter";
+import PlatformFeatures from "@/components/home/platform-features";
 import Link from "next/link";
 
 export default function Home() {
@@ -103,7 +107,10 @@ export default function Home() {
       </section>
 
           <ImpactStats/>
-
+          <PlatformFeatures/>
+          <FeaturedEvents/>
+          <CompletedEvents/>
+          <Newsletter/>
     </main>
   );
 }
