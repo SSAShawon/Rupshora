@@ -1,26 +1,117 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
+/* ========================================
+   RUPSHORA - LIGHT THEME
+======================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fbf5f5;
+  --foreground: #29151e;
+
+  --card: #ffffff;
+  --card-foreground: #29151e;
+
+  --primary: #873c56;
+  --primary-foreground: #ffffff;
+
+  --secondary: #f0dde2;
+  --secondary-foreground: #642d40;
+
+  --muted: #f3e9ec;
+  --muted-foreground: #79636c;
+
+  --accent: #e9a5b5;
+  --accent-foreground: #29151e;
+
+  --border: #eadde0;
+  --input: #eadde0;
+  --ring: #a64e69;
+
+  --radius: 0.75rem;
 }
+
+/* ========================================
+   RUPSHORA - DARK THEME
+======================================== */
+
+.dark {
+  --background: #10090d;
+  --foreground: #fff7f8;
+
+  --card: #1a0d13;
+  --card-foreground: #fff7f8;
+
+  --primary: #b85f79;
+  --primary-foreground: #ffffff;
+
+  --secondary: #29151e;
+  --secondary-foreground: #f3dde3;
+
+  --muted: #211017;
+  --muted-foreground: #bfaeb4;
+
+  --accent: #e8a0b2;
+  --accent-foreground: #29151e;
+
+  --border: #503743;
+  --input: #503743;
+  --ring: #e8a0b2;
+}
+
+/* ========================================
+   TAILWIND THEME MAPPING
+======================================== */
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-inter);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ========================================
+   GLOBAL STYLES
+======================================== */
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
