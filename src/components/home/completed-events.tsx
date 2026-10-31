@@ -1,40 +1,67 @@
 
-import Link from "next/link";
+"use client";
 
-const completedEvents = [
-  {
-    id: 1,
-    title: "Community Tree Plantation",
-    category: "Environment",
-    date: "October 12, 2026",
-    location: "Khulna, Bangladesh",
-    participants: "45 Volunteers",
-    image:
-      "https://images.unsplash.com/photo-1448375240586-882707db888b?w=800",
-  },
-  {
-    id: 2,
-    title: "Clean Our City Campaign",
-    category: "Cleanliness",
-    date: "October 05, 2026",
-    location: "Dhaka, Bangladesh",
-    participants: "60 Volunteers",
-    image:
-      "https://images.unsplash.com/photo-1532996122724-e3c354a0b15?w=800",
-  },
-  {
-    id: 3,
-    title: "Food for Everyone",
-    category: "Donation",
-    date: "September 25, 2026",
-    location: "Khulna, Bangladesh",
-    participants: "35 Volunteers",
-    image:
-      "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800",
-  },
-];
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+interface CompletedEvent {
+  _id: string;
+  title: string;
+  description: string;
+  eventType: string;
+  thumbnail: string;
+  location: string;
+  eventDate: string;
+  participantsCount?: number;
+}
+
+interface EventsResponse {
+  success: boolean;
+  events: CompletedEvent[];
+}
 
 export default function CompletedEvents() {
+  const [completedEvents, setCompletedEvents] = useState<CompletedEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchCompletedEvents = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/events/completed"
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch completed events");
+        }
+
+        const data: EventsResponse = await response.json();
+
+        if (data.success) {
+          setCompletedEvents(data.events);
+        } else {
+          throw new Error("Could not load completed events");
+        }
+      } catch (err) {
+        console.error("Completed Events Error:", err);
+        setError("Unable to load completed events.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCompletedEvents();
+  }, []);
+
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   return (
     <section className="bg-secondary/30 px-5 py-16 md:px-8 md:py-20">
       <div className="mx-auto max-w-7xl">
@@ -64,78 +91,97 @@ export default function CompletedEvents() {
           </Link>
         </div>
 
+        {/* Loading */}
+        {loading && (
+          <div className="py-16 text-center text-sm text-muted-foreground">
+            Loading completed events...
+          </div>
+        )}
+
+        {/* Error */}
+        {!loading && error && (
+          <div className="rounded-xl border border-border bg-card px-5 py-10 text-center">
+            <p className="text-sm text-muted-foreground">{error}</p>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && completedEvents.length === 0 && (
+          <div className="rounded-xl border border-border bg-card px-5 py-10 text-center">
+            <p className="text-sm text-muted-foreground">
+              No completed events available yet.
+            </p>
+          </div>
+        )}
+
         {/* Completed Event Cards */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {completedEvents.map((event) => (
-            <article
-              key={event.id}
-              className="overflow-hidden rounded-2xl border border-border bg-card"
-            >
-              {/* Event Image */}
-              <div className="relative">
-                <div
-                  role="img"
-                  aria-label={event.title}
-                  className="h-52 bg-cover bg-center"
-                  style={{
-                    backgroundImage: `url("${event.image}")`,
-                  }}
-                />
+        {!loading && !error && completedEvents.length > 0 && (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {completedEvents.map((event) => (
+              <article
+                key={event._id}
+                className="overflow-hidden rounded-2xl border border-border bg-card"
+              >
+                {/* Event Image */}
+                <div className="relative">
+                  <div
+                    role="img"
+                    aria-label={event.title}
+                    className="h-52 bg-cover bg-center"
+                    style={{
+                      backgroundImage: `url("${event.thumbnail}")`,
+                    }}
+                  />
 
-                {/* Completed Badge */}
-                <span className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-[#10090D]/85 px-3 py-1.5 text-xs font-semibold text-[#E8A0B2] backdrop-blur-sm">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#E8A0B2]" />
-                  Completed
-                </span>
-              </div>
-
-              {/* Event Information */}
-              <div className="p-5">
-                <span className="inline-block rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-primary">
-                  {event.category}
-                </span>
-
-                <h3 className="mt-3 text-lg font-semibold text-card-foreground">
-                  {event.title}
-                </h3>
-
-                {/* Date and Location */}
-                <div className="mt-4 space-y-2 text-sm text-muted-foreground">
-                  <p className="flex items-center gap-2">
-                    <span className="text-primary">⌖</span>
-                    {event.location}
-                  </p>
-
-                  <p className="flex items-center gap-2">
-                    <span className="text-primary">◷</span>
-                    {event.date}
-                  </p>
+                  {/* Completed Badge */}
+                  <span className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-[#10090D]/85 px-3 py-1.5 text-xs font-semibold text-[#E8A0B2] backdrop-blur-sm">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#E8A0B2]" />
+                    Completed
+                  </span>
                 </div>
 
-                {/* Participants */}
-                <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">
-                      Participation
+                {/* Event Information */}
+                <div className="p-5">
+                  <span className="inline-block rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-primary">
+                    {event.eventType}
+                  </span>
+
+                  <h3 className="mt-3 text-lg font-semibold text-card-foreground">
+                    {event.title}
+                  </h3>
+
+                  {/* Date and Location */}
+                  <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+                    <p className="flex items-center gap-2">
+                      <span className="text-primary">⌖</span>
+                      {event.location}
                     </p>
 
-                    <p className="mt-1 text-sm font-semibold text-card-foreground">
-                      {event.participants}
+                    <p className="flex items-center gap-2">
+                      <span className="text-primary">◷</span>
+                      {formatDate(event.eventDate)}
                     </p>
                   </div>
 
-                  <Link
-                    href={`/events/${event.id}`}
-                    className="inline-flex items-center gap-2 rounded-lg border border-primary px-4 py-2.5 text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
-                  >
-                    View Details
-                    <span aria-hidden="true">→</span>
-                  </Link>
+                  {/* Participants */}
+                  <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        Participation
+                      </p>
+
+                      <p className="mt-1 text-sm font-semibold text-card-foreground">
+                        {event.participantsCount ?? 0} Volunteers
+                      </p>
+                    </div>
+
+                    
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
+              </article>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

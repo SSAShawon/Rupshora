@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import ThemeToggle from "./theme-toggle";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -17,7 +18,6 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background">
       <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 md:px-8">
-
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-xl font-bold text-primary-foreground">
@@ -49,6 +49,8 @@ export default function Navbar() {
 
         {/* Desktop Buttons */}
         <div className="hidden items-center gap-3 sm:flex">
+          <ThemeToggle />
+
           <Link
             href="/login"
             className="rounded-lg px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary"
@@ -64,11 +66,26 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Controls */}
+        <div className="flex items-center gap-2 sm:hidden">
+          <ThemeToggle />
+
+          <button
+            type="button"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="rounded-lg border border-border px-3 py-2 text-foreground lg:hidden"
+            aria-label="Toggle navigation menu"
+            aria-expanded={menuOpen}
+          >
+            {menuOpen ? "✕" : "☰"}
+          </button>
+        </div>
+
+        {/* Tablet Menu Button */}
         <button
           type="button"
           onClick={() => setMenuOpen(!menuOpen)}
-          className="rounded-lg border border-border px-3 py-2 text-foreground lg:hidden"
+          className="hidden rounded-lg border border-border px-3 py-2 text-foreground sm:block lg:hidden"
           aria-label="Toggle navigation menu"
           aria-expanded={menuOpen}
         >
