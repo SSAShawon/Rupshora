@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../components/theme-provider";
+import Navbar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -27,7 +29,9 @@ export default function RootLayout({
           defaultTheme="light"
           enableSystem={false}
         >
-          {children}
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>
