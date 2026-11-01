@@ -24,7 +24,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-r from-[#10090D] via-[#10090D]/85 to-[#10090D]/25" />
 
         {/* Additional Bottom Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#10090D]/60 via-transparent to-[#10090D]/20" />
+        <div className="absolute inset-0 bg-gradient-to-t  from-[#10090D]/60 via-transparent to-[#10090D]/20" />
 
         {/* Hero Content */}
         <div className="relative z-10 mx-auto w-full max-w-7xl px-5 py-24 md:px-8">
