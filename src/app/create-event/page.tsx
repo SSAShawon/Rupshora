@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
@@ -12,16 +12,20 @@ export default function CreateEventPage() {
   const { data: session, isPending: sessionPending } =
     authClient.useSession();
 
-  const [minEventDate] = useState(() => {
+  const [minEventDate, setMinEventDate] = useState("");
+
+  useEffect(() => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    return [
+    const formattedDate = [
       tomorrow.getFullYear(),
       String(tomorrow.getMonth() + 1).padStart(2, "0"),
       String(tomorrow.getDate()).padStart(2, "0"),
     ].join("-");
-  });
+
+    setMinEventDate(formattedDate);
+  }, []);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -97,7 +101,10 @@ export default function CreateEventPage() {
 
     if (!formData.eventDate) {
       newErrors.eventDate = "Event date is required.";
-    } else if (formData.eventDate < minEventDate) {
+    } else if (
+      minEventDate &&
+      formData.eventDate < minEventDate
+    ) {
       newErrors.eventDate = "Please select a future date.";
     }
 
@@ -111,6 +118,12 @@ export default function CreateEventPage() {
     e.preventDefault();
 
     setServerMessage("");
+
+    if (!minEventDate) {
+      setMessageType("error");
+      setServerMessage("Please wait while the event date is loading.");
+      return;
+    }
 
     if (!validateForm()) return;
 
@@ -199,8 +212,8 @@ export default function CreateEventPage() {
 
   const labelClass =
     "mb-2 block text-sm font-semibold text-foreground";
-  
-    if (sessionPending) {
+
+  if (sessionPending) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
         <p className="text-sm text-muted-foreground">
@@ -264,19 +277,6 @@ export default function CreateEventPage() {
             community impact. Create an event and invite others to join.
           </p>
         </div>
-
-        {/* Login Check */}
-        {!sessionPending && !session?.user && (
-          <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm">
-            Please login before creating an event.{" "}
-            <Link
-              href="/login"
-              className="font-bold text-primary underline"
-            >
-              Login Now
-            </Link>
-          </div>
-        )}
 
         {/* Form Layout */}
         <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
@@ -445,9 +445,10 @@ export default function CreateEventPage() {
                     id="eventDate"
                     name="eventDate"
                     type="date"
-                    min={minEventDate}
+                    min={minEventDate || undefined}
                     value={formData.eventDate}
                     onChange={handleChange}
+                    disabled={!minEventDate}
                     className={inputClass}
                   />
 
@@ -489,7 +490,12 @@ export default function CreateEventPage() {
 
               <button
                 type="submit"
-                disabled={isSubmitting || sessionPending || !session?.user}
+                disabled={
+                  isSubmitting ||
+                  sessionPending ||
+                  !session?.user ||
+                  !minEventDate
+                }
                 className="rounded-xl bg-primary px-7 py-3 text-sm font-semibold text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmitting
