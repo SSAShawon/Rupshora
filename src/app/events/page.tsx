@@ -23,7 +23,7 @@ export default function UpcomingEventsPage() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch(`${process.env.RUPSHORA_BACKEND_URL}/api/events`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_RUPSHORA_BACKEND_URL}/api/events`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch events");

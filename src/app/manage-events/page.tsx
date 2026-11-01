@@ -25,7 +25,7 @@ interface EventForm {
   eventDate: string;
 }
 
-const API_URL = `${process.env.RUPSHORA_BACKEND_URL}/api/events`;
+const API_URL = `${process.env.NEXT_PUBLIC_RUPSHORA_BACKEND_URL}/api/events`;
 
 const eventTypes = [
   "Cleanup",

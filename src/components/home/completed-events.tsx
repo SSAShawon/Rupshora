@@ -29,7 +29,7 @@ export default function CompletedEvents() {
     const fetchCompletedEvents = async () => {
       try {
         const response = await fetch(
-          `${process.env.RUPSHORA_BACKEND_URL}/api/events/completed`
+          `${process.env.NEXT_PUBLIC_RUPSHORA_BACKEND_URL}/api/events/completed`
         );
 
         if (!response.ok) {

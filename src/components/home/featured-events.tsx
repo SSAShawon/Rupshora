@@ -24,7 +24,7 @@ export default function FeaturedEvents() {
     const fetchFeaturedEvents = async () => {
       try {
         const response = await fetch(
-          `${process.env.RUPSHORA_BACKEND_URL}/api/events/featured`
+          `${process.env.NEXT_PUBLIC_RUPSHORA_BACKEND_URL}/api/events/featured`
         );
 
         if (!response.ok) {
