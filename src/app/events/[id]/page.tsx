@@ -1,13 +1,17 @@
+
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { authClient } from "@/lib/auth-client";
 
 interface Participant {
   _id: string;
+  userId?: string;
   userName?: string;
   userEmail?: string;
+  userPhoto?: string;
   photoURL?: string;
   photoUrl?: string;
   image?: string;
@@ -35,13 +39,20 @@ interface EventResponse {
 
 export default function EventDetailsPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params.id as string;
+
+  const { data: session, isPending: sessionLoading } =
+    authClient.useSession();
 
   const [event, setEvent] = useState<Event | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [participantCount, setParticipantCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [joining, setJoining] = useState(false);
   const [error, setError] = useState("");
+  const [joinMessage, setJoinMessage] = useState("");
+  const [joinError, setJoinError] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -51,7 +62,9 @@ export default function EventDetailsPage() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(`http://localhost:5000/api/events/${id}`);
+        const response = await fetch(
+          `http://localhost:5000/api/events/${id}`
+        );
 
         if (!response.ok) {
           throw new Error("Failed to load event details");
@@ -72,6 +85,73 @@ export default function EventDetailsPage() {
 
     fetchEventDetails();
   }, [id]);
+
+  const handleJoinEvent = async () => {
+    setJoinMessage("");
+    setJoinError("");
+
+    if (!session?.user) {
+      router.push("/login");
+      return;
+    }
+
+    try {
+      setJoining(true);
+
+      const response = await fetch(
+        `http://localhost:5000/api/events/${id}/join`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const result = await response.json().catch(() => ({}));
+
+      if (response.status === 401) {
+        router.push("/login");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || result.error || "Unable to join this event."
+        );
+      }
+
+      // Refresh event details after successful joining.
+      const detailsResponse = await fetch(
+        `http://localhost:5000/api/events/${id}`
+      );
+
+      if (detailsResponse.ok) {
+        const data: EventResponse = await detailsResponse.json();
+
+        setEvent(data.event);
+        setParticipants(data.participants || []);
+        setParticipantCount(data.participantCount || 0);
+      }
+
+      setJoinMessage("You have successfully joined this event!");
+    } catch (error) {
+      console.error("Join event error:", error);
+
+      setJoinError(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again."
+      );
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  const isJoined = participants.some(
+    (participant) => participant.userId === session?.user?.id
+  );
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -203,15 +283,36 @@ export default function EventDetailsPage() {
           <div className="flex flex-col gap-2 sm:items-end">
             <button
               type="button"
-              disabled
-              className="w-full cursor-not-allowed rounded-xl bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground opacity-70 sm:w-auto"
+              onClick={handleJoinEvent}
+              disabled={joining || sessionLoading || isJoined}
+              className="w-full rounded-xl bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/85 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
-              Join Event
+              {joining
+                ? "Joining..."
+                : isJoined
+                  ? "Already Joined ✓"
+                  : session?.user
+                    ? "Join Event"
+                    : "Login to Join"}
             </button>
 
             <p className="text-xs text-muted-foreground">
-              Login required · Coming soon
+              {isJoined
+                ? "You are participating in this event."
+                : "Be part of something meaningful."}
             </p>
+
+            {joinMessage && (
+              <p className="text-xs font-medium text-primary">
+                {joinMessage}
+              </p>
+            )}
+
+            {joinError && (
+              <p className="text-xs font-medium text-destructive">
+                {joinError}
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -392,6 +493,7 @@ export default function EventDetailsPage() {
                       "Volunteer";
 
                     const photo =
+                      participant.userPhoto ||
                       participant.photoURL ||
                       participant.photoUrl ||
                       participant.image;
