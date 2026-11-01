@@ -69,7 +69,7 @@ function EventDetailsContent() {
         setError("");
 
         const response = await fetch(
-          `http://localhost:5000/api/events/${id}`
+          `${process.env.RUPSHORA_BACKEND_URL}/api/events/${id}`
         );
 
         if (!response.ok) {
@@ -115,7 +115,7 @@ function EventDetailsContent() {
       setJoining(true);
 
       const response = await fetch(
-        `http://localhost:5000/api/events/${id}/join`,
+        `${process.env.RUPSHORA_BACKEND_URL}/api/events/${id}/join`,
         {
           method: "POST",
           credentials: "include",
@@ -139,7 +139,7 @@ function EventDetailsContent() {
       }
 
       const detailsResponse = await fetch(
-        `http://localhost:5000/api/events/${id}`
+        `${process.env.RUPSHORA_BACKEND_URL}/api/events/${id}`
       );
 
       if (detailsResponse.ok) {

@@ -36,7 +36,7 @@ export default function JoinedEventsPage() {
         setError("");
 
         const response = await fetch(
-          "http://localhost:5000/api/events/joined-events",
+          `${process.env.RUPSHORA_BACKEND_URL}/api/events/joined-events`,
           {
             credentials: "include",
           },
