@@ -41,20 +41,22 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    setError("");
-    setGoogleLoading(true);
+  setError("");
+  setGoogleLoading(true);
 
-    try {
-      await authClient.signIn.social({
-        provider: "google",
-        callbackURL: process.env.NEXT_PUBLIC_RUPSHORA_FRONTEND_URL || "http://localhost:3000",
-        errorCallbackURL: process.env.NEXT_PUBLIC_RUPSHORA_FRONTEND_URL || "http://localhost:3000/login",
-      });
-    } catch {
-      setError("Google sign in failed. Please try again.");
-      setGoogleLoading(false);
-    }
-  };
+  try {
+    const frontendOrigin = window.location.origin;
+
+    await authClient.signIn.social({
+      provider: "google",
+      callbackURL: frontendOrigin,
+      errorCallbackURL: `${frontendOrigin}/login`,
+    });
+  } catch {
+    setError("Google sign in failed. Please try again.");
+    setGoogleLoading(false);
+  }
+};
 
   return (
     <main className="min-h-screen bg-background px-4 py-12 text-foreground">
