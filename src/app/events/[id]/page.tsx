@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { Suspense } from "react";
 
 interface Participant {
   _id: string;
@@ -37,7 +38,7 @@ interface EventResponse {
   participantCount: number;
 }
 
-export default function EventDetailsPage() {
+function EventDetailsContent() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
@@ -610,5 +611,19 @@ export default function EventDetailsPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function EventDetailsPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen flex items-center justify-center">
+          <p>Loading event details...</p>
+        </main>
+      }
+    >
+      <EventDetailsContent />
+    </Suspense>
   );
 }
