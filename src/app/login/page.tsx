@@ -47,8 +47,8 @@ export default function LoginPage() {
     try {
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "http://localhost:3000/",
-        errorCallbackURL: "http://localhost:3000/login",
+        callbackURL: process.env.NEXT_PUBLIC_RUPSHORA_FRONTEND_URL || "http://localhost:3000",
+        errorCallbackURL: process.env.NEXT_PUBLIC_RUPSHORA_FRONTEND_URL || "http://localhost:3000/login",
       });
     } catch {
       setError("Google sign in failed. Please try again.");
