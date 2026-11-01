@@ -262,7 +262,7 @@ export default function ManageEventsPage() {
   };
 
   // Loading state
-  if (isPending || loading) {
+  if (isPending || (session?.user && loading)) {
     return (
       <main className="flex min-h-[70vh] items-center justify-center bg-background">
         <div className="text-center">

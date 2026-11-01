@@ -68,7 +68,7 @@ export default function JoinedEventsPage() {
     });
   };
 
-  if (sessionLoading || loading) {
+  if (sessionLoading || (session?.user && loading)) {
     return (
       <main className="min-h-screen bg-background px-5 py-24">
         <div className="mx-auto max-w-7xl text-center">

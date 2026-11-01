@@ -54,8 +54,13 @@ export default function EventDetailsPage() {
   const [joinMessage, setJoinMessage] = useState("");
   const [joinError, setJoinError] = useState("");
 
+  // Fetch event details only after login verification.
   useEffect(() => {
-    if (!id) return;
+    if (sessionLoading || !session?.user || !id) {
+      return;
+    }
+
+    let isActive = true;
 
     const fetchEventDetails = async () => {
       try {
@@ -72,19 +77,29 @@ export default function EventDetailsPage() {
 
         const data: EventResponse = await response.json();
 
+        if (!isActive) return;
+
         setEvent(data.event);
         setParticipants(data.participants || []);
         setParticipantCount(data.participantCount || 0);
       } catch (error) {
+        if (!isActive) return;
+
         console.error("Event details error:", error);
         setError("Unable to load this event. Please try again later.");
       } finally {
-        setLoading(false);
+        if (isActive) {
+          setLoading(false);
+        }
       }
     };
 
     fetchEventDetails();
-  }, [id]);
+
+    return () => {
+      isActive = false;
+    };
+  }, [id, session?.user, sessionLoading]);
 
   const handleJoinEvent = async () => {
     setJoinMessage("");
@@ -122,7 +137,6 @@ export default function EventDetailsPage() {
         );
       }
 
-      // Refresh event details after successful joining.
       const detailsResponse = await fetch(
         `http://localhost:5000/api/events/${id}`
       );
@@ -171,6 +185,54 @@ export default function EventDetailsPage() {
       .toUpperCase();
   };
 
+  // Session Loading
+  if (sessionLoading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
+        <p className="text-sm text-muted-foreground">
+          Checking your login session...
+        </p>
+      </main>
+    );
+  }
+
+  // Login Required
+  if (!session?.user) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+            Rupshora Community
+          </p>
+
+          <h1 className="mt-4 text-2xl font-bold">
+            Login Required
+          </h1>
+
+          <p className="mt-3 text-sm leading-7 text-muted-foreground">
+            Please login to view event details, discover volunteers,
+            and participate in community activities.
+          </p>
+
+          <Link
+            href={`/login?callbackURL=${encodeURIComponent(`/events/${id}`)}`}
+            className="mt-7 inline-flex w-full justify-center rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white hover:opacity-90"
+          >
+            Login Now
+          </Link>
+
+          <Link
+            href="/events"
+            className="mt-4 block text-sm text-muted-foreground hover:text-primary"
+          >
+            Back to Events
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  // Event Loading
   if (loading) {
     return (
       <main className="min-h-screen bg-background px-5 py-24">
@@ -184,6 +246,7 @@ export default function EventDetailsPage() {
     );
   }
 
+  // Event Error
   if (error || !event) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background px-5">
@@ -291,9 +354,7 @@ export default function EventDetailsPage() {
                 ? "Joining..."
                 : isJoined
                   ? "Already Joined ✓"
-                  : session?.user
-                    ? "Join Event"
-                    : "Login to Join"}
+                  : "Join Event"}
             </button>
 
             <p className="text-xs text-muted-foreground">
@@ -320,7 +381,6 @@ export default function EventDetailsPage() {
       {/* Main Content */}
       <section className="px-5 pb-20 md:px-8">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-3">
-          {/* Left Content */}
           <div className="space-y-8 lg:col-span-2">
             {/* About Event */}
             <div className="rounded-2xl border border-border bg-card p-6 md:p-8">

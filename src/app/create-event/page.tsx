@@ -199,6 +199,44 @@ export default function CreateEventPage() {
 
   const labelClass =
     "mb-2 block text-sm font-semibold text-foreground";
+  
+    if (sessionPending) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
+        <p className="text-sm text-muted-foreground">
+          Checking your login session...
+        </p>
+      </main>
+    );
+  }
+
+  if (!session?.user) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-center">
+          <h1 className="text-2xl font-bold">Login Required</h1>
+
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            Please login to create and manage your volunteering events.
+          </p>
+
+          <Link
+            href="/login"
+            className="mt-6 inline-flex rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white hover:opacity-90"
+          >
+            Login Now
+          </Link>
+
+          <Link
+            href="/"
+            className="mt-4 block text-sm text-muted-foreground hover:text-primary"
+          >
+            Back to Home
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background px-4 py-12 text-foreground sm:px-6 lg:px-8">
