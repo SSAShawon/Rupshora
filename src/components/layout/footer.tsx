@@ -1,5 +1,5 @@
-
 import Link from "next/link";
+import Image from "next/image";
 
 const quickLinks = [
   { name: "Home", href: "/" },
@@ -18,15 +18,18 @@ export default function Footer() {
   return (
     <footer className="border-t border-border bg-secondary/40">
       <div className="mx-auto max-w-7xl px-5 py-14 md:px-8">
-
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
-
           {/* Brand */}
           <div>
             <Link href="/" className="inline-flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-xl font-bold text-primary-foreground">
-                R
-              </div>
+              <Image
+                src="/images/logo.jpg"
+                alt="Rupshora Logo"
+                width={40}
+                height={40}
+                priority
+                className="h-10 w-10 rounded-full object-cover"
+              />
 
               <span className="text-xl font-bold text-foreground">
                 Rupshora
@@ -34,17 +37,15 @@ export default function Footer() {
             </Link>
 
             <p className="mt-5 max-w-xs text-sm leading-7 text-muted-foreground">
-              Small Acts, Greater Impact. Join a community of people who
-              believe that even the smallest act of kindness can create
-              meaningful change.
+              Small Acts, Greater Impact. Join a community of people who believe
+              that even the smallest act of kindness can create meaningful
+              change.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="mb-5 font-semibold text-foreground">
-              Quick Links
-            </h3>
+            <h3 className="mb-5 font-semibold text-foreground">Quick Links</h3>
 
             <ul className="space-y-3">
               {quickLinks.map((link) => (
@@ -62,9 +63,7 @@ export default function Footer() {
 
           {/* Get Involved */}
           <div>
-            <h3 className="mb-5 font-semibold text-foreground">
-              Get Involved
-            </h3>
+            <h3 className="mb-5 font-semibold text-foreground">Get Involved</h3>
 
             <ul className="space-y-3">
               {supportLinks.map((link) => (
@@ -87,8 +86,8 @@ export default function Footer() {
             </h3>
 
             <p className="text-sm leading-7 text-muted-foreground">
-              Every community becomes stronger when people come together.
-              Find an event, volunteer your time, and be part of the change.
+              Every community becomes stronger when people come together. Find
+              an event, volunteer your time, and be part of the change.
             </p>
 
             <Link

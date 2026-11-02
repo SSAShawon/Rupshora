@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from "next/image";
@@ -56,12 +55,16 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background">
       <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 md:px-8">
-
         {/* Logo */}
         <Link href="/" onClick={closeMenus} className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-xl font-bold text-primary-foreground">
-            R
-          </div>
+          <Image
+            src="/images/logo.jpg"
+            alt="Rupshora Logo"
+            width={40}
+            height={40}
+            priority
+            className="h-10 w-10 rounded-full object-cover"
+          />
 
           <div>
             <h1 className="text-xl font-bold tracking-tight text-foreground">
@@ -195,9 +198,7 @@ export default function Navbar() {
             </div>
           )}
 
-          {isPending && (
-            <div className="h-10 w-10 rounded-full bg-secondary" />
-          )}
+          {isPending && <div className="h-10 w-10 rounded-full bg-secondary" />}
         </div>
 
         {/* Mobile Controls */}
