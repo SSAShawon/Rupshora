@@ -111,7 +111,7 @@ export default function HowItWorks() {
             </Link>
 
             <Link
-              href="/register"
+              href="/contact"
               className="inline-flex items-center justify-center rounded-xl border border-primary px-7 py-3.5 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               Join Rupshora

@@ -63,25 +63,52 @@ export default function CreateEventPage() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
+    // Event Title
     if (!formData.title.trim()) {
       newErrors.title = "Event title is required.";
+    } else if (formData.title.trim().length < 5) {
+      newErrors.title = "Event title must be at least 5 characters.";
+    } else if (formData.title.trim().length > 100) {
+      newErrors.title = "Event title cannot exceed 100 characters.";
     }
 
+    // Description
     if (!formData.description.trim()) {
       newErrors.description = "Event description is required.";
+    } else if (formData.description.trim().length < 20) {
+      newErrors.description = "Description must be at least 20 characters.";
+    } else if (formData.description.trim().length > 1000) {
+      newErrors.description = "Description cannot exceed 1000 characters.";
     }
+
+    // Event Type
+    const allowedTypes = [
+      "Cleanup",
+      "Plantation",
+      "Donation",
+      "Education",
+      "Healthcare",
+      "Community Service",
+      "Other",
+    ];
 
     if (!formData.eventType) {
       newErrors.eventType = "Please select an event category.";
+    } else if (!allowedTypes.includes(formData.eventType)) {
+      newErrors.eventType = "Please select a valid event category.";
     }
 
+    // Image URL
     if (!formData.thumbnail.trim()) {
       newErrors.thumbnail = "Event image URL is required.";
     } else {
       try {
         const imageUrl = new URL(formData.thumbnail);
 
-        if (imageUrl.protocol !== "http:" && imageUrl.protocol !== "https:") {
+        if (
+          !["http:", "https:"].includes(imageUrl.protocol) ||
+          !imageUrl.hostname.includes(".")
+        ) {
           newErrors.thumbnail = "Please enter a valid image URL.";
         }
       } catch {
@@ -89,10 +116,16 @@ export default function CreateEventPage() {
       }
     }
 
+    // Location
     if (!formData.location.trim()) {
       newErrors.location = "Event location is required.";
+    } else if (formData.location.trim().length < 3) {
+      newErrors.location = "Location must be at least 3 characters.";
+    } else if (formData.location.trim().length > 150) {
+      newErrors.location = "Location cannot exceed 150 characters.";
     }
 
+    // Event Date
     if (!formData.eventDate) {
       newErrors.eventDate = "Event date is required.";
     } else if (minEventDate && formData.eventDate < minEventDate) {
