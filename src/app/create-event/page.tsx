@@ -83,12 +83,15 @@ export default function CreateEventPage() {
 
     // Event Type
     const allowedTypes = [
+      "All Events",
       "Cleanup",
       "Plantation",
       "Donation",
       "Education",
       "Healthcare",
       "Community Service",
+      "Environment",
+      "Food Support",
       "Other",
     ];
 
@@ -385,6 +388,8 @@ export default function CreateEventPage() {
                   <option value="Donation">Donation</option>
                   <option value="Education">Education</option>
                   <option value="Healthcare">Healthcare</option>
+                  <option value="Environment">Environment</option>
+                  <option value="Food Support">Food Support</option>
                   <option value="Community Service">Community Service</option>
                   <option value="Other">Other</option>
                 </select>

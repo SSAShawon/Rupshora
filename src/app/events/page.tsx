@@ -15,15 +15,33 @@ interface Event {
   creatorName: string;
 }
 
+const categories = [
+  "All Events",
+  "Cleanup",
+  "Plantation",
+  "Donation",
+  "Education",
+  "Healthcare",
+  "Community Service",
+  "Environment",
+  "Food Support",
+  "Other",
+];
+
 export default function UpcomingEventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All Events");
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_RUPSHORA_BACKEND_URL}/api/events`);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_RUPSHORA_BACKEND_URL}/api/events`
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch events");
@@ -49,6 +67,24 @@ export default function UpcomingEventsPage() {
       day: "numeric",
     });
   };
+
+  // Search and Category Filtering
+  const filteredEvents = events.filter((event) => {
+    const search = searchTerm.trim().toLowerCase();
+
+    const matchesSearch =
+      !search ||
+      event.title.toLowerCase().includes(search) ||
+      event.description.toLowerCase().includes(search) ||
+      event.location.toLowerCase().includes(search) ||
+      event.creatorName.toLowerCase().includes(search);
+
+    const matchesCategory =
+      selectedCategory === "All Events" ||
+      event.eventType.toLowerCase() === selectedCategory.toLowerCase();
+
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <section className="min-h-screen bg-background px-5 py-16 md:px-8 md:py-24">
@@ -99,84 +135,188 @@ export default function UpcomingEventsPage() {
           </div>
         )}
 
-        {/* Events Grid */}
+        {/* Search, Category Filter and Events */}
         {!loading && !error && events.length > 0 && (
           <>
-            <div className="mb-6 flex items-center justify-between">
+            {/* Search and Filter Section */}
+            <div className="mb-10 rounded-2xl border border-border bg-card p-5 sm:p-7">
+              <div className="mb-5">
+                <h2 className="text-lg font-semibold text-card-foreground">
+                  Find Your Event
+                </h2>
+
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Search for events or explore by category.
+                </p>
+              </div>
+
+              {/* Search Input */}
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg text-muted-foreground">
+                  ⌕
+                </span>
+
+                <input
+                  type="search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search by title, description, location or organizer..."
+                  className="w-full rounded-xl border border-border bg-background py-3.5 pl-12 pr-4 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              {/* Category Filter */}
+              <div className="mt-6">
+                <p className="mb-3 text-sm font-semibold text-card-foreground">
+                  Browse by Category
+                </p>
+
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((category) => (
+                    <button
+                      key={category}
+                      type="button"
+                      onClick={() => setSelectedCategory(category)}
+                      className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
+                        selectedCategory === category
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background text-muted-foreground hover:border-primary hover:text-primary"
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Clear Filters */}
+              {(searchTerm || selectedCategory !== "All Events") && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setSelectedCategory("All Events");
+                  }}
+                  className="mt-5 text-sm font-semibold text-primary hover:underline"
+                >
+                  Clear Search & Filters
+                </button>
+              )}
+            </div>
+
+            {/* Results Count */}
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-muted-foreground">
                 Showing{" "}
+                <span className="font-semibold text-foreground">
+                  {filteredEvents.length}
+                </span>{" "}
+                of{" "}
                 <span className="font-semibold text-foreground">
                   {events.length}
                 </span>{" "}
                 upcoming events
               </p>
+
+              {selectedCategory !== "All Events" && (
+                <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-primary">
+                  {selectedCategory}
+                </span>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {events.map((event) => (
-                <article
-                  key={event._id}
-                  className="overflow-hidden rounded-2xl border border-border bg-card"
+            {/* No Search Results */}
+            {filteredEvents.length === 0 && (
+              <div className="rounded-2xl border border-border bg-card px-5 py-16 text-center">
+                <h2 className="text-xl font-semibold text-card-foreground">
+                  No Matching Events Found
+                </h2>
+
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Try another search term or select a different category.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setSelectedCategory("All Events");
+                  }}
+                  className="mt-6 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/85"
                 >
-                  {/* Event Image */}
-                  <div
-                    role="img"
-                    aria-label={event.title}
-                    className="h-52 bg-cover bg-center"
-                    style={{
-                      backgroundImage: `url("${event.thumbnail}")`,
-                    }}
-                  />
+                  Show All Events
+                </button>
+              </div>
+            )}
 
-                  {/* Event Information */}
-                  <div className="p-5">
-                    <span className="inline-block rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-primary">
-                      {event.eventType}
-                    </span>
+            {/* Events Grid */}
+            {filteredEvents.length > 0 && (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredEvents.map((event) => (
+                  <article
+                    key={event._id}
+                    className="overflow-hidden rounded-2xl border border-border bg-card"
+                  >
+                    {/* Event Image */}
+                    <div
+                      role="img"
+                      aria-label={event.title}
+                      className="h-52 bg-cover bg-center"
+                      style={{
+                        backgroundImage: `url("${event.thumbnail}")`,
+                      }}
+                    />
 
-                    <h2 className="mt-3 text-lg font-semibold text-card-foreground">
-                      {event.title}
-                    </h2>
+                    {/* Event Information */}
+                    <div className="p-5">
+                      <span className="inline-block rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-primary">
+                        {event.eventType}
+                      </span>
 
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                      {event.description}
-                    </p>
+                      <h2 className="mt-3 text-lg font-semibold text-card-foreground">
+                        {event.title}
+                      </h2>
 
-                    <div className="mt-4 space-y-2 text-sm text-muted-foreground">
-                      <p>
-                        <span className="mr-2 text-primary">⌖</span>
-                        {event.location}
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                        {event.description}
                       </p>
 
-                      <p>
-                        <span className="mr-2 text-primary">◷</span>
-                        {formatDate(event.eventDate)}
-                      </p>
-                    </div>
-
-                    <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4">
-                      <div className="min-w-0">
-                        <p className="text-xs text-muted-foreground">
-                          Created by
+                      <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+                        <p>
+                          <span className="mr-2 text-primary">⌖</span>
+                          {event.location}
                         </p>
 
-                        <p className="mt-1 truncate text-sm font-semibold text-card-foreground">
-                          {event.creatorName}
+                        <p>
+                          <span className="mr-2 text-primary">◷</span>
+                          {formatDate(event.eventDate)}
                         </p>
                       </div>
 
-                      <Link
-                        href={`/events/${event._id}`}
-                        className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground hover:bg-primary/85"
-                      >
-                        View Details
-                        <span aria-hidden="true">→</span>
-                      </Link>
+                      <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4">
+                        <div className="min-w-0">
+                          <p className="text-xs text-muted-foreground">
+                            Created by
+                          </p>
+
+                          <p className="mt-1 truncate text-sm font-semibold text-card-foreground">
+                            {event.creatorName}
+                          </p>
+                        </div>
+
+                        <Link
+                          href={`/events/${event._id}`}
+                          className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground hover:bg-primary/85"
+                        >
+                          View Details
+                          <span aria-hidden="true">→</span>
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>
