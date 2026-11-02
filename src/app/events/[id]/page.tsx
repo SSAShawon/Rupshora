@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -43,8 +42,7 @@ function EventDetailsContent() {
   const router = useRouter();
   const id = params.id as string;
 
-  const { data: session, isPending: sessionLoading } =
-    authClient.useSession();
+  const { data: session, isPending: sessionLoading } = authClient.useSession();
 
   const [event, setEvent] = useState<Event | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -69,7 +67,7 @@ function EventDetailsContent() {
         setError("");
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_RUPSHORA_BACKEND_URL}/api/events/${id}`
+          `${process.env.NEXT_PUBLIC_RUPSHORA_BACKEND_URL}/api/events/${id}`,
         );
 
         if (!response.ok) {
@@ -114,15 +112,22 @@ function EventDetailsContent() {
     try {
       setJoining(true);
 
+      const { data: tokenData, error: tokenError } = await authClient.token();
+
+      if (tokenError || !tokenData?.token) {
+        throw new Error(
+          "Failed to get authentication token. Please login again.",
+        );
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_RUPSHORA_BACKEND_URL}/api/events/${id}/join`,
         {
           method: "POST",
-          credentials: "include",
           headers: {
-            "Content-Type": "application/json",
+            Authorization: `Bearer ${tokenData.token}`,
           },
-        }
+        },
       );
 
       const result = await response.json().catch(() => ({}));
@@ -134,12 +139,12 @@ function EventDetailsContent() {
 
       if (!response.ok) {
         throw new Error(
-          result.message || result.error || "Unable to join this event."
+          result.message || result.error || "Unable to join this event.",
         );
       }
 
       const detailsResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_RUPSHORA_BACKEND_URL}/api/events/${id}`
+        `${process.env.NEXT_PUBLIC_RUPSHORA_BACKEND_URL}/api/events/${id}`,
       );
 
       if (detailsResponse.ok) {
@@ -157,7 +162,7 @@ function EventDetailsContent() {
       setJoinError(
         error instanceof Error
           ? error.message
-          : "Something went wrong. Please try again."
+          : "Something went wrong. Please try again.",
       );
     } finally {
       setJoining(false);
@@ -165,7 +170,7 @@ function EventDetailsContent() {
   };
 
   const isJoined = participants.some(
-    (participant) => participant.userId === session?.user?.id
+    (participant) => participant.userId === session?.user?.id,
   );
 
   const formatDate = (date: string) => {
@@ -206,13 +211,11 @@ function EventDetailsContent() {
             Rupshora Community
           </p>
 
-          <h1 className="mt-4 text-2xl font-bold">
-            Login Required
-          </h1>
+          <h1 className="mt-4 text-2xl font-bold">Login Required</h1>
 
           <p className="mt-3 text-sm leading-7 text-muted-foreground">
-            Please login to view event details, discover volunteers,
-            and participate in community activities.
+            Please login to view event details, discover volunteers, and
+            participate in community activities.
           </p>
 
           <Link
@@ -365,9 +368,7 @@ function EventDetailsContent() {
             </p>
 
             {joinMessage && (
-              <p className="text-xs font-medium text-primary">
-                {joinMessage}
-              </p>
+              <p className="text-xs font-medium text-primary">{joinMessage}</p>
             )}
 
             {joinError && (

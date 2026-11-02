@@ -35,10 +35,20 @@ export default function JoinedEventsPage() {
         setLoading(true);
         setError("");
 
+        const { data: tokenData, error: tokenError } = await authClient.token();
+
+        if (tokenError || !tokenData?.token) {
+          throw new Error(
+            "Failed to get authentication token. Please login again.",
+          );
+        }
+
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_RUPSHORA_BACKEND_URL}/api/events/joined-events`,
           {
-            credentials: "include",
+            headers: {
+              Authorization: `Bearer ${tokenData.token}`,
+            },
           },
         );
 

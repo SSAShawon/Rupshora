@@ -5,6 +5,7 @@ import type { ChangeEvent, FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import { getAuthToken } from "@/lib/get-auth-token";
 
 interface Event {
   _id: string;
@@ -92,9 +93,13 @@ export default function ManageEventsPage() {
         setLoading(true);
         setError("");
 
+        const token = await getAuthToken();
+
         const response = await fetch(`${API_URL}/my-events`, {
           method: "GET",
-          credentials: "include",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         const result = await response.json();
@@ -185,11 +190,13 @@ export default function ManageEventsPage() {
     try {
       setSaving(true);
 
+      const token = await getAuthToken();
+
       const response = await fetch(`${API_URL}/${editingEvent._id}`, {
         method: "PATCH",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           title: formData.title.trim(),
@@ -238,9 +245,13 @@ export default function ManageEventsPage() {
       setSuccess("");
       setError("");
 
+      const token = await getAuthToken();
+
       const response = await fetch(`${API_URL}/${event._id}`, {
         method: "DELETE",
-        credentials: "include",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       const result = await response.json();

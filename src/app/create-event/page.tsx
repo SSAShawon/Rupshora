@@ -1,16 +1,15 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { getAuthToken } from "@/lib/get-auth-token";
 
 export default function CreateEventPage() {
   const router = useRouter();
 
-  const { data: session, isPending: sessionPending } =
-    authClient.useSession();
+  const { data: session, isPending: sessionPending } = authClient.useSession();
 
   const [minEventDate, setMinEventDate] = useState("");
 
@@ -39,14 +38,12 @@ export default function CreateEventPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverMessage, setServerMessage] = useState("");
-  const [messageType, setMessageType] = useState<"success" | "error">(
-    "error"
-  );
+  const [messageType, setMessageType] = useState<"success" | "error">("error");
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
 
@@ -84,10 +81,7 @@ export default function CreateEventPage() {
       try {
         const imageUrl = new URL(formData.thumbnail);
 
-        if (
-          imageUrl.protocol !== "http:" &&
-          imageUrl.protocol !== "https:"
-        ) {
+        if (imageUrl.protocol !== "http:" && imageUrl.protocol !== "https:") {
           newErrors.thumbnail = "Please enter a valid image URL.";
         }
       } catch {
@@ -101,10 +95,7 @@ export default function CreateEventPage() {
 
     if (!formData.eventDate) {
       newErrors.eventDate = "Event date is required.";
-    } else if (
-      minEventDate &&
-      formData.eventDate < minEventDate
-    ) {
+    } else if (minEventDate && formData.eventDate < minEventDate) {
       newErrors.eventDate = "Please select a future date.";
     }
 
@@ -142,14 +133,19 @@ export default function CreateEventPage() {
     try {
       setIsSubmitting(true);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_RUPSHORA_BACKEND_URL}/api/events`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const token = await getAuthToken();
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_RUPSHORA_BACKEND_URL}/api/events`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
         },
-        credentials: "include",
-        body: JSON.stringify(formData),
-      });
+      );
 
       const result = await response.json();
 
@@ -186,7 +182,7 @@ export default function CreateEventPage() {
       setServerMessage(
         error instanceof Error
           ? error.message
-          : "Something went wrong. Please try again."
+          : "Something went wrong. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -210,8 +206,7 @@ export default function CreateEventPage() {
   const inputClass =
     "w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary";
 
-  const labelClass =
-    "mb-2 block text-sm font-semibold text-foreground";
+  const labelClass = "mb-2 block text-sm font-semibold text-foreground";
 
   if (sessionPending) {
     return (
@@ -254,7 +249,6 @@ export default function CreateEventPage() {
   return (
     <main className="min-h-screen bg-background px-4 py-12 text-foreground sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
-
         {/* Page Heading */}
         <div className="mb-10">
           <Link
@@ -273,23 +267,20 @@ export default function CreateEventPage() {
           </h1>
 
           <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
-            Bring people together and turn small acts into meaningful
-            community impact. Create an event and invite others to join.
+            Bring people together and turn small acts into meaningful community
+            impact. Create an event and invite others to join.
           </p>
         </div>
 
         {/* Form Layout */}
         <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-
           <form
             onSubmit={handleSubmit}
             noValidate
             className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-8"
           >
             <div className="mb-8 border-b border-border pb-5">
-              <h2 className="text-xl font-bold">
-                Event Information
-              </h2>
+              <h2 className="text-xl font-bold">Event Information</h2>
 
               <p className="mt-2 text-sm text-muted-foreground">
                 Provide the details about your volunteering event.
@@ -297,7 +288,6 @@ export default function CreateEventPage() {
             </div>
 
             <div className="space-y-6">
-
               {/* Event Title */}
               <div>
                 <label htmlFor="title" className={labelClass}>
@@ -315,9 +305,7 @@ export default function CreateEventPage() {
                 />
 
                 {errors.title && (
-                  <p className="mt-2 text-xs text-red-500">
-                    {errors.title}
-                  </p>
+                  <p className="mt-2 text-xs text-red-500">{errors.title}</p>
                 )}
               </div>
 
@@ -357,9 +345,7 @@ export default function CreateEventPage() {
                   onChange={handleChange}
                   className={inputClass}
                 >
-                  <option value="">
-                    Select an event category
-                  </option>
+                  <option value="">Select an event category</option>
 
                   <option value="Cleanup">Cleanup</option>
                   <option value="Plantation">Tree Plantation</option>
@@ -413,7 +399,6 @@ export default function CreateEventPage() {
 
               {/* Location and Date */}
               <div className="grid gap-6 sm:grid-cols-2">
-
                 <div>
                   <label htmlFor="location" className={labelClass}>
                     Event Location <span className="text-primary">*</span>
@@ -458,7 +443,6 @@ export default function CreateEventPage() {
                     </p>
                   )}
                 </div>
-
               </div>
             </div>
 
@@ -478,7 +462,6 @@ export default function CreateEventPage() {
 
             {/* Submit Buttons */}
             <div className="mt-10 flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:justify-end">
-
               <button
                 type="reset"
                 onClick={handleReset}
@@ -498,17 +481,13 @@ export default function CreateEventPage() {
                 }
                 className="rounded-xl bg-primary px-7 py-3 text-sm font-semibold text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isSubmitting
-                  ? "Creating Event..."
-                  : "Create Event →"}
+                {isSubmitting ? "Creating Event..." : "Create Event →"}
               </button>
-
             </div>
           </form>
 
           {/* Sidebar */}
           <aside className="space-y-5">
-
             <div className="rounded-2xl border border-border bg-card p-6">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
                 Event Guidelines
@@ -519,21 +498,13 @@ export default function CreateEventPage() {
               </h3>
 
               <ul className="mt-5 space-y-4 text-sm leading-6 text-muted-foreground">
-                <li>
-                  01. Choose a clear and meaningful event title.
-                </li>
+                <li>01. Choose a clear and meaningful event title.</li>
 
-                <li>
-                  02. Explain the purpose of your event.
-                </li>
+                <li>02. Explain the purpose of your event.</li>
 
-                <li>
-                  03. Provide an accurate location and future date.
-                </li>
+                <li>03. Provide an accurate location and future date.</li>
 
-                <li>
-                  04. Use a relevant, high-quality event image.
-                </li>
+                <li>04. Use a relevant, high-quality event image.</li>
               </ul>
             </div>
 
@@ -543,11 +514,10 @@ export default function CreateEventPage() {
               </p>
 
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Every meaningful change starts with someone willing
-                to take the first step.
+                Every meaningful change starts with someone willing to take the
+                first step.
               </p>
             </div>
-
           </aside>
         </div>
       </div>
