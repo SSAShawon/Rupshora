@@ -1,9 +1,11 @@
+
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import Swal from "sweetalert2";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,50 +15,81 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
+
+    if (loading || googleLoading) return;
+
     setLoading(true);
 
     try {
       const { error } = await authClient.signIn.email({
-        email,
+        email: email.trim(),
         password,
       });
 
       if (error) {
-        setError(error.message || "Unable to login. Please try again.");
+        await Swal.fire({
+          icon: "error",
+          title: "Login Failed!",
+          text: error.message || "Unable to login. Please try again.",
+          confirmButtonText: "Try Again",
+          confirmButtonColor: "#873C56",
+        });
         return;
       }
+
+      await Swal.fire({
+        icon: "success",
+        title: "Welcome Back!",
+        text: "You have successfully logged in to Rupshora.",
+        confirmButtonText: "Continue",
+        confirmButtonColor: "#873C56",
+        timer: 1800,
+        timerProgressBar: true,
+      });
 
       router.push("/");
       router.refresh();
     } catch {
-      setError("Something went wrong. Please try again.");
+      await Swal.fire({
+        icon: "error",
+        title: "Something Went Wrong!",
+        text: "Please try again later.",
+        confirmButtonText: "Okay",
+        confirmButtonColor: "#873C56",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-  setError("");
-  setGoogleLoading(true);
+    if (loading || googleLoading) return;
 
-  try {
-    const frontendOrigin = window.location.origin;
+    setGoogleLoading(true);
 
-    await authClient.signIn.social({
-      provider: "google",
-      callbackURL: frontendOrigin,
-      errorCallbackURL: `${frontendOrigin}/login`,
-    });
-  } catch {
-    setError("Google sign in failed. Please try again.");
-    setGoogleLoading(false);
-  }
-};
+    try {
+      const frontendOrigin = window.location.origin;
+
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: frontendOrigin,
+        errorCallbackURL: `${frontendOrigin}/login`,
+      });
+    } catch {
+      await Swal.fire({
+        icon: "error",
+        title: "Google Login Failed!",
+        text: "Unable to sign in with Google. Please try again.",
+        confirmButtonText: "Try Again",
+        confirmButtonColor: "#873C56",
+      });
+
+      setGoogleLoading(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-background px-4 py-12 text-foreground">
@@ -151,15 +184,6 @@ export default function LoginPage() {
                   </button>
                 </div>
               </div>
-
-              {error && (
-                <div
-                  role="alert"
-                  className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600"
-                >
-                  {error}
-                </div>
-              )}
 
               <button
                 type="submit"

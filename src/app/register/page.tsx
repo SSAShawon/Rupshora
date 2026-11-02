@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import Swal from "sweetalert2";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -16,39 +17,51 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
-  // Live Password Validation
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
   const hasMinLength = password.length >= 6;
+
+  const showError = async (message: string) => {
+    await Swal.fire({
+      icon: "error",
+      title: "Registration Failed!",
+      text: message,
+      confirmButtonText: "Try Again",
+      confirmButtonColor: "#873C56",
+    });
+  };
 
   const handleRegister = async (
     e: React.FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
 
-    setError("");
-    setSuccess("");
+    if (loading) return;
 
     if (!hasUppercase) {
-      setError("Password must contain at least one uppercase letter.");
+      await showError(
+        "Password must contain at least one uppercase letter."
+      );
       return;
     }
 
     if (!hasLowercase) {
-      setError("Password must contain at least one lowercase letter.");
+      await showError(
+        "Password must contain at least one lowercase letter."
+      );
       return;
     }
 
     if (!hasMinLength) {
-      setError("Password must contain at least 6 characters.");
+      await showError(
+        "Password must contain at least 6 characters."
+      );
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      await showError("Passwords do not match.");
       return;
     }
 
@@ -56,27 +69,33 @@ export default function RegisterPage() {
 
     try {
       const { error } = await authClient.signUp.email({
-        name,
-        email,
+        name: name.trim(),
+        email: email.trim(),
         password,
         image: photoURL.trim() || undefined,
       });
 
       if (error) {
-        setError(error.message || "Unable to create your account.");
+        await showError(
+          error.message || "Unable to create your account."
+        );
         return;
       }
 
-      setSuccess(
-        "Account created successfully! Redirecting to homepage..."
-      );
+      await Swal.fire({
+        icon: "success",
+        title: "Account Created!",
+        text: "Welcome to Rupshora. Your account has been created successfully.",
+        confirmButtonText: "Continue",
+        confirmButtonColor: "#873C56",
+        timer: 2000,
+        timerProgressBar: true,
+      });
 
-      setTimeout(() => {
-        router.push("/");
-        router.refresh();
-      }, 1200);
+      router.push("/");
+      router.refresh();
     } catch {
-      setError("Something went wrong. Please try again.");
+      await showError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -85,8 +104,6 @@ export default function RegisterPage() {
   return (
     <main className="min-h-screen bg-background px-4 py-12 text-foreground">
       <div className="mx-auto grid min-h-[75vh] max-w-6xl items-center gap-12 lg:grid-cols-2">
-
-        {/* Left Content */}
         <section className="hidden lg:block">
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-primary">
             Join Our Community
@@ -110,10 +127,8 @@ export default function RegisterPage() {
           </div>
         </section>
 
-        {/* Register Form */}
         <section className="mx-auto w-full max-w-md">
           <div className="rounded-3xl border border-border bg-card p-7 shadow-sm sm:p-9">
-
             <Link
               href="/"
               className="text-xl font-bold tracking-tight text-primary"
@@ -132,8 +147,6 @@ export default function RegisterPage() {
             </div>
 
             <form onSubmit={handleRegister} className="space-y-4">
-
-              {/* Full Name */}
               <div>
                 <label
                   htmlFor="name"
@@ -154,7 +167,6 @@ export default function RegisterPage() {
                 />
               </div>
 
-              {/* Email */}
               <div>
                 <label
                   htmlFor="email"
@@ -175,7 +187,6 @@ export default function RegisterPage() {
                 />
               </div>
 
-              {/* Profile Photo */}
               <div>
                 <label
                   htmlFor="photoURL"
@@ -197,7 +208,6 @@ export default function RegisterPage() {
                 />
               </div>
 
-              {/* Password */}
               <div>
                 <label
                   htmlFor="password"
@@ -227,11 +237,9 @@ export default function RegisterPage() {
                   </button>
                 </div>
 
-                {/* Password Requirements */}
                 <div className="mt-3 space-y-2">
-
                   <p
-                    className={`flex items-center gap-2 text-xs transition-colors ${
+                    className={`flex items-center gap-2 text-xs ${
                       hasUppercase
                         ? "font-medium text-primary"
                         : "text-muted-foreground"
@@ -242,7 +250,7 @@ export default function RegisterPage() {
                   </p>
 
                   <p
-                    className={`flex items-center gap-2 text-xs transition-colors ${
+                    className={`flex items-center gap-2 text-xs ${
                       hasLowercase
                         ? "font-medium text-primary"
                         : "text-muted-foreground"
@@ -253,7 +261,7 @@ export default function RegisterPage() {
                   </p>
 
                   <p
-                    className={`flex items-center gap-2 text-xs transition-colors ${
+                    className={`flex items-center gap-2 text-xs ${
                       hasMinLength
                         ? "font-medium text-primary"
                         : "text-muted-foreground"
@@ -262,11 +270,9 @@ export default function RegisterPage() {
                     <span>{hasMinLength ? "✓" : "○"}</span>
                     Minimum 6 characters length
                   </p>
-
                 </div>
               </div>
 
-              {/* Confirm Password */}
               <div>
                 <label
                   htmlFor="confirmPassword"
@@ -279,9 +285,7 @@ export default function RegisterPage() {
                   id="confirmPassword"
                   type={showPassword ? "text" : "password"}
                   value={confirmPassword}
-                  onChange={(e) =>
-                    setConfirmPassword(e.target.value)
-                  }
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter your password"
                   autoComplete="new-password"
                   required
@@ -289,27 +293,6 @@ export default function RegisterPage() {
                 />
               </div>
 
-              {/* Error Message */}
-              {error && (
-                <div
-                  role="alert"
-                  className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-600"
-                >
-                  {error}
-                </div>
-              )}
-
-              {/* Success Message */}
-              {success && (
-                <div
-                  role="status"
-                  className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary"
-                >
-                  {success}
-                </div>
-              )}
-
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
@@ -317,10 +300,8 @@ export default function RegisterPage() {
               >
                 {loading ? "Creating Account..." : "Create Account"}
               </button>
-
             </form>
 
-            {/* Login Link */}
             <p className="mt-6 text-center text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link
@@ -330,10 +311,8 @@ export default function RegisterPage() {
                 Sign In
               </Link>
             </p>
-
           </div>
         </section>
-
       </div>
     </main>
   );
