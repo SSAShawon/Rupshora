@@ -1,9 +1,11 @@
+
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 import ThemeToggle from "./theme-toggle";
 import { authClient } from "@/lib/auth-client";
 
@@ -32,21 +34,60 @@ export default function Navbar() {
   };
 
   const handleLogout = async () => {
+    if (loggingOut) return;
+
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "Are you sure?",
+      text: "You will be logged out of your Rupshora account.",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Logout",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#873C56",
+      cancelButtonColor: "#6B7280",
+      reverseButtons: true,
+    });
+
+    if (!result.isConfirmed) return;
+
     setLoggingOut(true);
 
     try {
       const { error } = await authClient.signOut();
 
       if (error) {
-        console.error("Logout failed:", error.message);
+        await Swal.fire({
+          icon: "error",
+          title: "Logout Failed!",
+          text: error.message || "Unable to logout. Please try again.",
+          confirmButtonText: "Okay",
+          confirmButtonColor: "#873C56",
+        });
         return;
       }
 
       closeMenus();
+
+      await Swal.fire({
+        icon: "success",
+        title: "Logged Out Successfully!",
+        text: "You have been safely logged out of Rupshora.",
+        confirmButtonText: "Continue",
+        confirmButtonColor: "#873C56",
+        timer: 1800,
+        timerProgressBar: true,
+      });
+
       router.push("/");
       router.refresh();
-    } catch (error) {
-      console.error("Logout error:", error);
+    } catch {
+      await Swal.fire({
+        icon: "error",
+        title: "Something Went Wrong!",
+        text: "Please try logging out again.",
+        confirmButtonText: "Okay",
+        confirmButtonColor: "#873C56",
+      });
     } finally {
       setLoggingOut(false);
     }
@@ -145,7 +186,6 @@ export default function Navbar() {
                 </span>
               </button>
 
-              {/* Desktop Profile Dropdown */}
               {profileOpen && (
                 <div className="absolute right-0 top-full z-50 mt-3 w-60 overflow-hidden rounded-2xl border border-border bg-card p-2 shadow-xl">
                   <div className="border-b border-border px-3 py-3">
