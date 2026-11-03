@@ -25,13 +25,6 @@ Rupshora is a community service platform that helps people discover volunteering
 - MongoDB
 - Better Auth
 
-## Getting Started
-
-1. Clone the repository.
-2. Install the required dependencies.
-3. Configure the environment variables.
-4. Start the development server.
-5. Open the local website in your browser.
 
 ## Deployment
 
